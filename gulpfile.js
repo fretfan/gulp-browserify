@@ -16,6 +16,7 @@ const debug = require('gulp-debug');
 const cached = require('gulp-cached');
 const remember = require('gulp-remember');
 const newer = require('gulp-newer');
+const rev = require('gulp-rev');
 
 //var packageJSON = require('./package.json');
 //var dependencies = Object.keys(packageJSON && packageJSON.dependencies || {});
@@ -31,14 +32,14 @@ function vendor() {
     .bundle()
     .pipe(source('vendor.bundle.js'))
     .pipe(buffer())
-    // .pipe(sourcemaps.init({loadMaps: true}))
-    //     // Add transformation tasks to the pipeline here.
-    //     .pipe(uglify())
-    //     .on('error', log.error)
-    // .pipe(sourcemaps.write('./'))
-
+    .pipe(cached('vendor'))
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(uglify())
+    .on('error', log.error)
+    .pipe(remember('vendor'))
+    .pipe(sourcemaps.write('./'))
+    .pipe(rev())
     .pipe(gulp.dest(__dirname + '/dist'));
-    
   }
 function app() {
     return gulp.src(['./src/app*.js'])
@@ -55,15 +56,15 @@ function app() {
         .pipe(concat('app.bundle.js'))
         .pipe(uglify())
         .on('error', log.error)
+        .pipe(rev())
     .pipe(sourcemaps.write('./'))
-    
    
     .pipe(gulp.dest(__dirname + '/dist'));
 }
 
 
 function watchIt2() {
-  return gulp.watch('./src/app*.js',{ignoreInitial: true}, app);
+  return gulp.watch('./src/app*.js',{ignoreInitial: false}, app);
 }
 exports.qwe = gulp.series(watchIt2);
 
@@ -71,7 +72,7 @@ function injectIntoIndex() {
     var target = gulp.src('./src/index.html');
     // It's not necessary to read the files (will speed up things), we're only after their paths:
     var sources = gulp.src(['./dist/**/*.js'], {read: false})
-    .pipe(order(['vendor.bundle.js', 'app.bundle.js']))
+    .pipe(order(['vendor*', 'app*']))
    
     return target.pipe(inject(sources, {ignorePath: '/dist', addRootSlash: false}))
       .pipe(gulp.dest('./dist'));
@@ -107,10 +108,13 @@ function watchIt() {
 }
 
 
+function watchApp() {
+  return gulp.watch('./src/app*.js',{ignoreInitial: false}, gulp.series(clean, vendor, app, injectIntoIndex));
+}
 
-  // exports.default = gulp.series(clean);
-  exports.default = gulp.series(clean, vendor, app, injectIntoIndex);
-  exports.asd = gulp.series(watchIt);
+exports.default = gulp.series(clean, vendor, app, injectIntoIndex);
+exports.watch = gulp.series(watchApp)
+exports.asd = gulp.series(watchIt);
 
 // gulp.task('vendor', function() {
 //   return browserify()

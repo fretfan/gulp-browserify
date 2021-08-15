@@ -33,6 +33,7 @@
     "gulp-newer": "^1.4.0",
     "gulp-order": "^1.2.0",
     "gulp-remember": "^1.0.1",
+    "gulp-rev": "^9.0.0",
     "gulp-size": "^4.0.1",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
@@ -43,7 +44,6 @@
     "browserify": "^17.0.0",
     "jquery": "^1.12.2",
     "lodash": "^4.17.21",
-    "uniq": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   }
 }
